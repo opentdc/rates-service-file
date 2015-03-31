@@ -39,17 +39,17 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
-import javax.ws.rs.NotFoundException;
 
 import org.opentdc.rates.RatesModel;
 import org.opentdc.rates.ServiceProvider;
 import org.opentdc.service.exception.DuplicateException;
+import org.opentdc.service.exception.NotFoundException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-public class FileServideProvider implements ServiceProvider {
+public class FileServiceProvider implements ServiceProvider {
 	
 	private static final String SEED_FN = "/seed.json";
 	private static final String DATA_FN = "/data.json";
@@ -61,15 +61,16 @@ public class FileServideProvider implements ServiceProvider {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private boolean isPersistent = true;
 
-	public FileServideProvider(ServletContext context, boolean makePersistent) {
+	public FileServiceProvider(
+		ServletContext context, 
+		String prefix
+	) {
 		logger.info("> FileImpl()");
-
-		isPersistent = makePersistent;
 		if (dataF == null) {
-			dataF = new File(context.getRealPath(DATA_FN));
+			dataF = new File(context.getRealPath("/" + prefix + DATA_FN));
 		}
 		if (seedF == null) {
-			seedF = new File(context.getRealPath(SEED_FN));
+			seedF = new File(context.getRealPath("/" + prefix + SEED_FN));
 		}
 		if (data == null) {
 			data = new HashMap<String, RatesModel>();
@@ -77,7 +78,6 @@ public class FileServideProvider implements ServiceProvider {
 		if (data.size() == 0) {
 			importJson();
 		}
-
 		logger.info("FileImpl() initialized");
 	}
 
