@@ -58,7 +58,7 @@ public class FileServiceProvider implements ServiceProvider {
 	private static Map<String, RatesModel> data = null;
 
 	// instance variables
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(FileServiceProvider.class.getName());
 	private boolean isPersistent = true;
 
 	public FileServiceProvider(
