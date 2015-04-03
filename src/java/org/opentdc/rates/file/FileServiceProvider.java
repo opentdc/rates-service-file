@@ -82,7 +82,12 @@ public class FileServiceProvider implements ServiceProvider {
 	}
 
 	@Override
-	public ArrayList<RatesModel> list() {
+	public ArrayList<RatesModel> list(
+		String queryType,
+		String query,
+		long position,
+		long size
+	) {
 		logger.info("list() -> " + count() + " values");
 		return new ArrayList<RatesModel>(data.values());
 	}
@@ -116,15 +121,20 @@ public class FileServiceProvider implements ServiceProvider {
 	}
 
 	@Override
-	public RatesModel update(RatesModel rate) throws NotFoundException {
-		// it does not matter whether an object with the same ID already
-		// exists. It is either replaced or created.
-		data.put(rate.getId(), rate);
-		logger.info("update(" + rate + ")");
-		if (isPersistent) {
-			exportJson(dataF);
+	public RatesModel update(
+		String id, 
+		RatesModel rate
+	) throws NotFoundException {
+		if(data.get(id) == null) {
+			throw new NotFoundException();
+		} else {
+			data.put(rate.getId(), rate);
+			logger.info("update(" + rate + ")");
+			if (isPersistent) {
+				exportJson(dataF);
+			}
+			return rate;
 		}
-		return rate;
 	}
 
 	@Override
