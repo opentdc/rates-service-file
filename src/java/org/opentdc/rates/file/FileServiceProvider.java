@@ -65,7 +65,6 @@ public class FileServiceProvider implements ServiceProvider {
 		ServletContext context, 
 		String prefix
 	) {
-		logger.info("> FileImpl()");
 		if (dataF == null) {
 			dataF = new File(context.getRealPath("/" + prefix + DATA_FN));
 		}
@@ -78,7 +77,6 @@ public class FileServiceProvider implements ServiceProvider {
 		if (data.size() == 0) {
 			importJson();
 		}
-		logger.info("FileImpl() initialized");
 	}
 
 	@Override
