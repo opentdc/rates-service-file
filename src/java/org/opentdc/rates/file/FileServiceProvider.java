@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
@@ -36,7 +37,10 @@ import org.opentdc.file.AbstractFileServiceProvider;
 import org.opentdc.rates.RatesModel;
 import org.opentdc.rates.ServiceProvider;
 import org.opentdc.service.exception.DuplicateException;
+import org.opentdc.service.exception.InternalServerErrorException;
 import org.opentdc.service.exception.NotFoundException;
+import org.opentdc.service.exception.ValidationException;
+import org.opentdc.util.PrettyPrinter;
 
 public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel> implements ServiceProvider {
 	
@@ -54,6 +58,7 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 			for (RatesModel _rate : _rates) {
 				index.put(_rate.getId(), _rate);
 			}
+			logger.info(_rates.size() + " Rates imported.");
 		}
 	}
 
@@ -64,35 +69,48 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		long position,
 		long size
 	) {
-		logger.info("list() -> " + count() + " values");
+		// Collections.sort(index, RatesModel.RatesComparator);
+		logger.info("list() -> " + index.size() + " values");
 		return new ArrayList<RatesModel>(index.values());
 	}
 
 	@Override
-	public RatesModel create(RatesModel rate) throws DuplicateException {
-		logger.info("create(" + rate + ")");
+	public RatesModel create(
+			RatesModel rate) 
+		throws DuplicateException, ValidationException {
+		logger.info("create(" + PrettyPrinter.prettyPrintAsJSON(rate) + ")");
 		String _id = rate.getId();
-		if (_id != null && _id != "" && index.get(rate.getId()) != null) {
-			// object with same ID exists already
-			throw new DuplicateException();
+		if (_id == null || _id == "") {
+			_id = UUID.randomUUID().toString();
+		} else {
+			if (index.get(_id) != null) {
+				// object with same ID exists already
+				throw new DuplicateException("rate <" + _id + "> exists already.");
+			}
+			else { 	// a new ID was set on the client; we do not allow this
+				throw new ValidationException("rate <" + _id + 
+					"> contains an ID generated on the client. This is not allowed.");
+			}
 		}
-		RatesModel _rate = new RatesModel(rate.getTitle(), rate.getRate(),
-				rate.getDescription());
-		index.put(_rate.getId(), _rate);
+		rate.setId(_id);
+		index.put(_id, rate);
+		logger.info("create(" + PrettyPrinter.prettyPrintAsJSON(rate) + ")");
 		if (isPersistent) {
 			exportJson(index.values());
 		}
-		return _rate;
+		return rate;
 	}
 
 	@Override
-	public RatesModel read(String id) throws NotFoundException {
+	public RatesModel read(
+			String id) 
+		throws NotFoundException {
 		RatesModel _rate = index.get(id);
 		if (_rate == null) {
 			throw new NotFoundException("no rate with ID <" + id
 					+ "> was found.");
 		}
-		logger.info("read(" + id + ") -> " + _rate);
+		logger.info("read(" + id + ") -> " + PrettyPrinter.prettyPrintAsJSON(_rate));
 		return _rate;
 	}
 
@@ -102,7 +120,8 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		RatesModel rate
 	) throws NotFoundException {
 		if(index.get(id) == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("no rate with ID <" + id
+					+ "> was found.");
 		} else {
 			index.put(rate.getId(), rate);
 			logger.info("update(" + rate + ")");
@@ -114,27 +133,21 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	}
 
 	@Override
-	public void delete(String id) throws NotFoundException {
+	public void delete(
+			String id) 
+		throws NotFoundException, InternalServerErrorException {
 		RatesModel _rate = index.get(id);
-		;
 		if (_rate == null) {
-			throw new NotFoundException("delete(" + id
-					+ "): no such rate was found.");
+			throw new NotFoundException("rate <" + id
+					+ "> was not found.");
 		}
-		index.remove(id);
+		if (index.remove(id) == null) {
+			throw new InternalServerErrorException("rate <" + id
+					+ "> can not be removed, because it does not exist in the index");
+		}
 		logger.info("delete(" + id + ")");
 		if (isPersistent) {
 			exportJson(index.values());
 		}
-	}
-
-	@Override
-	public int count() {
-		int _count = -1;
-		if (index != null) {
-			_count = index.values().size();
-		}
-		logger.info("count() = " + _count);
-		return _count;
 	}
 }
