@@ -25,6 +25,7 @@ package org.opentdc.rates.file;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import org.opentdc.rates.RatesModel;
 import org.opentdc.rates.ServiceProvider;
 import org.opentdc.service.exception.DuplicateException;
 import org.opentdc.service.exception.InternalServerErrorException;
+import org.opentdc.service.exception.NotAllowedException;
 import org.opentdc.service.exception.NotFoundException;
 import org.opentdc.service.exception.ValidationException;
 import org.opentdc.util.PrettyPrinter;
@@ -93,6 +95,11 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 			}
 		}
 		rate.setId(_id);
+		Date _date = new Date();
+		rate.setCreatedAt(_date);
+		rate.setCreatedBy("TEST_USER");
+		rate.setModifiedAt(_date);
+		rate.setModifiedBy("TEST_USER");
 		index.put(_id, rate);
 		logger.info("create(" + PrettyPrinter.prettyPrintAsJSON(rate) + ")");
 		if (isPersistent) {
@@ -118,18 +125,30 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	public RatesModel update(
 		String id, 
 		RatesModel rate
-	) throws NotFoundException {
-		if(index.get(id) == null) {
+	) throws NotFoundException, NotAllowedException {
+		RatesModel _rate = index.get(id);
+		if(_rate == null) {
 			throw new NotFoundException("no rate with ID <" + id
 					+ "> was found.");
-		} else {
-			index.put(rate.getId(), rate);
-			logger.info("update(" + rate + ")");
-			if (isPersistent) {
-				exportJson(index.values());
-			}
-			return rate;
+		} 
+		if (! _rate.getCreatedAt().equals(rate.getCreatedAt())) {
+			throw new NotAllowedException("rate <" + id + ">: it is not allowed to change createdAt on the client.");
 		}
+		if (! _rate.getCreatedBy().equalsIgnoreCase(rate.getCreatedBy())) {
+			throw new NotAllowedException("rate <" + id + ">: it is not allowed to change createdBy on the client.");
+		}
+		_rate.setTitle(rate.getTitle());
+		_rate.setRate(rate.getRate());
+		_rate.setCurrency(rate.getCurrency());
+		_rate.setDescription(rate.getDescription());
+		_rate.setModifiedAt(new Date());
+		_rate.setModifiedBy("DUMMY_USER");
+		index.put(rate.getId(), _rate);
+		logger.info("update(" + id + ") -> " + PrettyPrinter.prettyPrintAsJSON(_rate));
+		if (isPersistent) {
+			exportJson(index.values());
+		}
+		return rate;
 	}
 
 	@Override
