@@ -25,6 +25,7 @@ package org.opentdc.rates.file;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -66,14 +67,22 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 
 	@Override
 	public ArrayList<RatesModel> list(
-		String queryType,
 		String query,
+		String queryType,
 		long position,
 		long size
 	) {
-		// Collections.sort(index, RatesModel.RatesComparator);
-		logger.info("list() -> " + index.size() + " values");
-		return new ArrayList<RatesModel>(index.values());
+		ArrayList<RatesModel> _rates = new ArrayList<RatesModel>(index.values());
+		Collections.sort(_rates, RatesModel.RateComparator);
+		ArrayList<RatesModel> _selection = new ArrayList<RatesModel>();
+		for (int i = 0; i < _rates.size(); i++) {
+			if (i >= position && i < (position + size)) {
+				_selection.add(_rates.get(i));
+			}			
+		}
+		logger.info("list(<" + query + ">, <" + queryType + 
+				">, <" + position + ">, <" + size + ">) -> " + _selection.size() + " rates.");
+		return _selection;
 	}
 
 	@Override
