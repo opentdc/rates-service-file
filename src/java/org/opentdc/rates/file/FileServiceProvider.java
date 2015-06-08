@@ -40,7 +40,6 @@ import org.opentdc.rates.RatesModel;
 import org.opentdc.rates.ServiceProvider;
 import org.opentdc.service.exception.DuplicateException;
 import org.opentdc.service.exception.InternalServerErrorException;
-import org.opentdc.service.exception.NotAllowedException;
 import org.opentdc.service.exception.NotFoundException;
 import org.opentdc.service.exception.ValidationException;
 import org.opentdc.util.PrettyPrinter;
@@ -134,17 +133,17 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	public RatesModel update(
 		String id, 
 		RatesModel rate
-	) throws NotFoundException, NotAllowedException {
+	) throws NotFoundException, ValidationException {
 		RatesModel _rate = index.get(id);
 		if(_rate == null) {
 			throw new NotFoundException("no rate with ID <" + id
 					+ "> was found.");
 		} 
 		if (! _rate.getCreatedAt().equals(rate.getCreatedAt())) {
-			throw new NotAllowedException("rate <" + id + ">: it is not allowed to change createdAt on the client.");
+			throw new ValidationException("rate <" + id + ">: it is not allowed to change createdAt on the client.");
 		}
 		if (! _rate.getCreatedBy().equalsIgnoreCase(rate.getCreatedBy())) {
-			throw new NotAllowedException("rate <" + id + ">: it is not allowed to change createdBy on the client.");
+			throw new ValidationException("rate <" + id + ">: it is not allowed to change createdBy on the client.");
 		}
 		_rate.setTitle(rate.getTitle());
 		_rate.setRate(rate.getRate());
@@ -152,12 +151,12 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		_rate.setDescription(rate.getDescription());
 		_rate.setModifiedAt(new Date());
 		_rate.setModifiedBy("DUMMY_USER");
-		index.put(rate.getId(), _rate);
+		index.put(id, _rate);
 		logger.info("update(" + id + ") -> " + PrettyPrinter.prettyPrintAsJSON(_rate));
 		if (isPersistent) {
 			exportJson(index.values());
 		}
-		return rate;
+		return _rate;
 	}
 
 	@Override
