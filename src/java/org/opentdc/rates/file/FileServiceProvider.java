@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 
 import org.opentdc.file.AbstractFileServiceProvider;
+import org.opentdc.rates.Currency;
 import org.opentdc.rates.RatesModel;
 import org.opentdc.rates.ServiceProvider;
 import org.opentdc.service.exception.DuplicateException;
@@ -102,6 +103,14 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 					"> contains an ID generated on the client. This is not allowed.");
 			}
 		}
+		if (rate.getTitle() == null || rate.getTitle().length() == 0) {
+			throw new ValidationException("rate <" + _id + 
+					"> must contain a valid title.");
+		}
+		if (rate.getCurrency() == null) {
+			rate.setCurrency(Currency.getDefaultCurrency());
+		}
+
 		rate.setId(_id);
 		Date _date = new Date();
 		rate.setCreatedAt(_date);
