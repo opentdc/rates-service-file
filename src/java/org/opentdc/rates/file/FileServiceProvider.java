@@ -45,6 +45,11 @@ import org.opentdc.service.exception.NotFoundException;
 import org.opentdc.service.exception.ValidationException;
 import org.opentdc.util.PrettyPrinter;
 
+/**
+ * A file-based or transient implementation of the Rates service.
+ * @author bruno
+ *
+ */
 public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel> implements ServiceProvider {
 	
 	private static Map<String, RatesModel> index = null;
@@ -149,10 +154,12 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 					+ "> was found.");
 		} 
 		if (! _rate.getCreatedAt().equals(rate.getCreatedAt())) {
-			throw new ValidationException("rate <" + id + ">: it is not allowed to change createdAt on the client.");
+			logger.warning("rate <" + id + ">: ignoring createdAt value <" + rate.getCreatedAt().toString() + 
+					"> because it was set on the client.");
 		}
 		if (! _rate.getCreatedBy().equalsIgnoreCase(rate.getCreatedBy())) {
-			throw new ValidationException("rate <" + id + ">: it is not allowed to change createdBy on the client.");
+			logger.warning("rate <" + id + ">: ignoring createdBy value <" + rate.getCreatedBy() +
+					"> because it was set on the client.");
 		}
 		_rate.setTitle(rate.getTitle());
 		_rate.setRate(rate.getRate());
