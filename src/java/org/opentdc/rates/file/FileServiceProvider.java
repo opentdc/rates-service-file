@@ -119,9 +119,9 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		rate.setId(_id);
 		Date _date = new Date();
 		rate.setCreatedAt(_date);
-		rate.setCreatedBy("TEST_USER");
+		rate.setCreatedBy(getPrincipal());
 		rate.setModifiedAt(_date);
-		rate.setModifiedBy("TEST_USER");
+		rate.setModifiedBy(getPrincipal());
 		index.put(_id, rate);
 		logger.info("create(" + PrettyPrinter.prettyPrintAsJSON(rate) + ")");
 		if (isPersistent) {
@@ -166,7 +166,7 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		_rate.setCurrency(rate.getCurrency());
 		_rate.setDescription(rate.getDescription());
 		_rate.setModifiedAt(new Date());
-		_rate.setModifiedBy("DUMMY_USER");
+		_rate.setModifiedBy(getPrincipal());
 		index.put(id, _rate);
 		logger.info("update(" + id + ") -> " + PrettyPrinter.prettyPrintAsJSON(_rate));
 		if (isPersistent) {
