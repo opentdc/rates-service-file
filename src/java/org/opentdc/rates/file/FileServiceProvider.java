@@ -55,6 +55,12 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	private static Map<String, RatesModel> index = null;
 	private static final Logger logger = Logger.getLogger(FileServiceProvider.class.getName());
 
+	/**
+	 * Constructor.
+	 * @param context the servlet context.
+	 * @param prefix the simple class name of the service provider
+	 * @throws IOException
+	 */
 	public FileServiceProvider(
 		ServletContext context, 
 		String prefix
@@ -70,6 +76,9 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.opentdc.rates.ServiceProvider#list(java.lang.String, java.lang.String, long, long)
+	 */
 	@Override
 	public ArrayList<RatesModel> list(
 		String query,
@@ -90,6 +99,9 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		return _selection;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.opentdc.rates.ServiceProvider#create(org.opentdc.rates.RatesModel)
+	 */
 	@Override
 	public RatesModel create(
 			RatesModel rate) 
@@ -130,6 +142,9 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		return rate;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.opentdc.rates.ServiceProvider#read(java.lang.String)
+	 */
 	@Override
 	public RatesModel read(
 			String id) 
@@ -143,6 +158,9 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		return _rate;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.opentdc.rates.ServiceProvider#update(java.lang.String, org.opentdc.rates.RatesModel)
+	 */
 	@Override
 	public RatesModel update(
 		String id, 
@@ -175,6 +193,9 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		return _rate;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.opentdc.rates.ServiceProvider#delete(java.lang.String)
+	 */
 	@Override
 	public void delete(
 			String id) 
