@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<project name="opentdc-rates-service-file" default="deliverables" basedir=".">
+<project name="opentdc-rates-service-file" basedir=".">
 
 	<property environment="env"/>
 	<property name="java.build.platform" value="jre-1.7" />
