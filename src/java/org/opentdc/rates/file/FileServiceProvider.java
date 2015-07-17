@@ -37,6 +37,7 @@ import javax.servlet.ServletContext;
 
 import org.opentdc.file.AbstractFileServiceProvider;
 import org.opentdc.rates.Currency;
+import org.opentdc.rates.RateType;
 import org.opentdc.rates.RatesModel;
 import org.opentdc.rates.ServiceProvider;
 import org.opentdc.service.exception.DuplicateException;
@@ -120,12 +121,17 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 					"> contains an ID generated on the client. This is not allowed.");
 			}
 		}
-		if (rate.getTitle() == null || rate.getTitle().length() == 0) {
-			throw new ValidationException("rate <" + _id + 
-					"> must contain a valid title.");
+		if (rate.getTitle() == null || rate.getTitle().isEmpty()) {
+			throw new ValidationException("rate <" + _id + "> must contain a valid title.");
+		}
+		if (rate.getRate() < 0) {
+			throw new ValidationException("rate <" + _id + ">: negative rates are not allowed.");
 		}
 		if (rate.getCurrency() == null) {
 			rate.setCurrency(Currency.getDefaultCurrency());
+		}
+		if (rate.getType() == null) {
+			rate.setType(RateType.getDefaultRateType());
 		}
 
 		rate.setId(_id);
@@ -149,12 +155,17 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	public RatesModel read(
 			String id) 
 		throws NotFoundException {
+		return getRatesModel(id);
+	}
+	
+	public static RatesModel getRatesModel(
+			String id) 
+		throws NotFoundException {
 		RatesModel _rate = index.get(id);
 		if (_rate == null) {
-			throw new NotFoundException("no rate with ID <" + id
-					+ "> was found.");
+			throw new NotFoundException("no rate with ID <" + id + "> was found.");
 		}
-		logger.info("read(" + id + ") -> " + PrettyPrinter.prettyPrintAsJSON(_rate));
+		logger.info("getRatesModel(" + id + ") -> " + PrettyPrinter.prettyPrintAsJSON(_rate));
 		return _rate;
 	}
 
@@ -171,6 +182,12 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 			throw new NotFoundException("no rate with ID <" + id
 					+ "> was found.");
 		} 
+		if (rate.getTitle() == null || rate.getTitle().isEmpty()) {
+			throw new ValidationException("rate <" + id + ">: title must be defined.");
+		}
+		if (rate.getRate() < 0) {
+			throw new ValidationException("rate <" + id + ">: negative rates are not allowed.");
+		}
 		if (! _rate.getCreatedAt().equals(rate.getCreatedAt())) {
 			logger.warning("rate <" + id + ">: ignoring createdAt value <" + rate.getCreatedAt().toString() + 
 					"> because it was set on the client.");
@@ -181,7 +198,16 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 		}
 		_rate.setTitle(rate.getTitle());
 		_rate.setRate(rate.getRate());
-		_rate.setCurrency(rate.getCurrency());
+		if (rate.getCurrency() == null) {
+			_rate.setCurrency(Currency.getDefaultCurrency());
+		} else {
+			_rate.setCurrency(rate.getCurrency());		
+		}
+		if (rate.getType() == null) {
+			_rate.setType(RateType.getDefaultRateType());
+		} else {
+			_rate.setType(rate.getType());
+		}
 		_rate.setDescription(rate.getDescription());
 		_rate.setModifiedAt(new Date());
 		_rate.setModifiedBy(getPrincipal());
