@@ -84,8 +84,8 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	public ArrayList<RatesModel> list(
 		String query,
 		String queryType,
-		long position,
-		long size
+		int position,
+		int size
 	) {
 		ArrayList<RatesModel> _rates = new ArrayList<RatesModel>(index.values());
 		Collections.sort(_rates, RatesModel.RateComparator);
