@@ -38,7 +38,7 @@ import javax.servlet.ServletContext;
 import org.opentdc.file.AbstractFileServiceProvider;
 import org.opentdc.rates.Currency;
 import org.opentdc.rates.RateType;
-import org.opentdc.rates.RatesModel;
+import org.opentdc.rates.RateModel;
 import org.opentdc.rates.ServiceProvider;
 import org.opentdc.service.exception.DuplicateException;
 import org.opentdc.service.exception.InternalServerErrorException;
@@ -51,9 +51,9 @@ import org.opentdc.util.PrettyPrinter;
  * @author bruno
  *
  */
-public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel> implements ServiceProvider {
+public class FileServiceProvider extends AbstractFileServiceProvider<RateModel> implements ServiceProvider {
 	
-	private static Map<String, RatesModel> index = null;
+	private static Map<String, RateModel> index = null;
 	private static final Logger logger = Logger.getLogger(FileServiceProvider.class.getName());
 
 	/**
@@ -68,9 +68,9 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	) throws IOException {
 		super(context, prefix);
 		if (index == null) {
-			index = new HashMap<String, RatesModel>();
-			List<RatesModel> _rates = importJson();
-			for (RatesModel _rate : _rates) {
+			index = new HashMap<String, RateModel>();
+			List<RateModel> _rates = importJson();
+			for (RateModel _rate : _rates) {
 				index.put(_rate.getId(), _rate);
 			}
 			logger.info(_rates.size() + " Rates imported.");
@@ -81,15 +81,15 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	 * @see org.opentdc.rates.ServiceProvider#list(java.lang.String, java.lang.String, long, long)
 	 */
 	@Override
-	public ArrayList<RatesModel> list(
+	public ArrayList<RateModel> list(
 		String query,
 		String queryType,
 		int position,
 		int size
 	) {
-		ArrayList<RatesModel> _rates = new ArrayList<RatesModel>(index.values());
-		Collections.sort(_rates, RatesModel.RateComparator);
-		ArrayList<RatesModel> _selection = new ArrayList<RatesModel>();
+		ArrayList<RateModel> _rates = new ArrayList<RateModel>(index.values());
+		Collections.sort(_rates, RateModel.RateComparator);
+		ArrayList<RateModel> _selection = new ArrayList<RateModel>();
 		for (int i = 0; i < _rates.size(); i++) {
 			if (i >= position && i < (position + size)) {
 				_selection.add(_rates.get(i));
@@ -104,8 +104,8 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	 * @see org.opentdc.rates.ServiceProvider#create(org.opentdc.rates.RatesModel)
 	 */
 	@Override
-	public RatesModel create(
-			RatesModel rate) 
+	public RateModel create(
+			RateModel rate) 
 		throws DuplicateException, ValidationException {
 		logger.info("create(" + PrettyPrinter.prettyPrintAsJSON(rate) + ")");
 		String _id = rate.getId();
@@ -152,16 +152,16 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	 * @see org.opentdc.rates.ServiceProvider#read(java.lang.String)
 	 */
 	@Override
-	public RatesModel read(
+	public RateModel read(
 			String id) 
 		throws NotFoundException {
 		return getRatesModel(id);
 	}
 	
-	public static RatesModel getRatesModel(
+	public static RateModel getRatesModel(
 			String id) 
 		throws NotFoundException {
-		RatesModel _rate = index.get(id);
+		RateModel _rate = index.get(id);
 		if (_rate == null) {
 			throw new NotFoundException("no rate with ID <" + id + "> was found.");
 		}
@@ -173,11 +173,11 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	 * @see org.opentdc.rates.ServiceProvider#update(java.lang.String, org.opentdc.rates.RatesModel)
 	 */
 	@Override
-	public RatesModel update(
+	public RateModel update(
 		String id, 
-		RatesModel rate
+		RateModel rate
 	) throws NotFoundException, ValidationException {
-		RatesModel _rate = index.get(id);
+		RateModel _rate = index.get(id);
 		if(_rate == null) {
 			throw new NotFoundException("no rate with ID <" + id
 					+ "> was found.");
@@ -226,7 +226,7 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RatesModel>
 	public void delete(
 			String id) 
 		throws NotFoundException, InternalServerErrorException {
-		RatesModel _rate = index.get(id);
+		RateModel _rate = index.get(id);
 		if (_rate == null) {
 			throw new NotFoundException("rate <" + id
 					+ "> was not found.");
