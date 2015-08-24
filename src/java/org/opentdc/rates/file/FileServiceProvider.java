@@ -34,12 +34,14 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.opentdc.file.AbstractFileServiceProvider;
 import org.opentdc.rates.Currency;
 import org.opentdc.rates.RateType;
 import org.opentdc.rates.RateModel;
 import org.opentdc.rates.ServiceProvider;
+import org.opentdc.service.ServiceUtil;
 import org.opentdc.service.exception.DuplicateException;
 import org.opentdc.service.exception.InternalServerErrorException;
 import org.opentdc.service.exception.NotFoundException;
@@ -105,6 +107,7 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RateModel> 
 	 */
 	@Override
 	public RateModel create(
+			HttpServletRequest request,
 			RateModel rate) 
 		throws DuplicateException, ValidationException {
 		logger.info("create(" + PrettyPrinter.prettyPrintAsJSON(rate) + ")");
@@ -137,9 +140,9 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RateModel> 
 		rate.setId(_id);
 		Date _date = new Date();
 		rate.setCreatedAt(_date);
-		rate.setCreatedBy(getPrincipal());
+		rate.setCreatedBy(ServiceUtil.getPrincipal(request));
 		rate.setModifiedAt(_date);
-		rate.setModifiedBy(getPrincipal());
+		rate.setModifiedBy(ServiceUtil.getPrincipal(request));
 		index.put(_id, rate);
 		logger.info("create(" + PrettyPrinter.prettyPrintAsJSON(rate) + ")");
 		if (isPersistent) {
@@ -174,6 +177,7 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RateModel> 
 	 */
 	@Override
 	public RateModel update(
+		HttpServletRequest request,
 		String id, 
 		RateModel rate
 	) throws NotFoundException, ValidationException {
@@ -210,7 +214,7 @@ public class FileServiceProvider extends AbstractFileServiceProvider<RateModel> 
 		}
 		_rate.setDescription(rate.getDescription());
 		_rate.setModifiedAt(new Date());
-		_rate.setModifiedBy(getPrincipal());
+		_rate.setModifiedBy(ServiceUtil.getPrincipal(request));
 		index.put(id, _rate);
 		logger.info("update(" + id + ") -> " + PrettyPrinter.prettyPrintAsJSON(_rate));
 		if (isPersistent) {
